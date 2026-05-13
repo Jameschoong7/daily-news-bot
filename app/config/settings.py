@@ -17,12 +17,12 @@ def load_yaml_file(path: Path) -> dict[str, Any]:
     """Load a YAML file and return an empty dict when the file is blank."""
     with path.open("r", encoding="utf-8") as file:
         return yaml.safe_load(file) or {}
-    
+
 
 def load_sources() -> list[dict[str, Any]]:
     """Load active and inactive news source definitions from YAML"""
     data = load_yaml_file(SOURCES_PATH)
-    return data.get("sources",[])
+    return data.get("sources", [])
 
 
 def load_user_profile() -> dict[str, Any]:
@@ -39,5 +39,5 @@ def load_environment() -> dict[str, str | None]:
         "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN"),
         "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID"),
         "database_path": os.getenv("DATABASE_PATH", "data/news_bot.db"),
-        "log_level": os.getenv("LOG_LEVEL","INFO"),
+        "log_level": os.getenv("LOG_LEVEL", "INFO"),
     }
