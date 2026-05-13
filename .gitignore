@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+data/*.db
+logs/*.log
+
+AGENTS.md
+PROJECT_MEMORY.md
+PLANS.md
+.agents/
+.codex/
