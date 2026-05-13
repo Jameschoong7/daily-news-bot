@@ -1,0 +1,28 @@
+sources:
+  - name: BBC Technology
+    url: https://feeds.bbci.co.uk/news/technology/rss.xml
+    source_type: rss
+    category: technology
+    trust_level: high
+    is_active: true
+
+  - name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+    source_type: rss
+    category: technology
+    trust_level: medium
+    is_active: true
+
+  - name: MIT Technology Review
+    url: https://www.technologyreview.com/feed/
+    source_type: rss
+    category: ai
+    trust_level: high
+    is_active: true
+
+  - name: The Star Malaysia Tech
+    url: https://www.thestar.com.my/rss/tech
+    source_type: rss
+    category: malaysia
+    trust_level: medium
+    is_active: true

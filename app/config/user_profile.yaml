@@ -1,0 +1,34 @@
+name: James
+location: Malaysia
+education:
+  field: Computer Science
+  university: UOW Malaysia KDU Penang University College
+  graduation: December 2026
+
+career_goals:
+  - Backend internship
+  - Full-stack internship
+  - MNC internship
+  - AI pipeline and automation portfolio
+
+priority_locations:
+  - Penang
+  - Kuala Lumpur
+  - Malaysia
+  - Remote
+
+interests:
+  - AI
+  - LLMs
+  - software engineering
+  - backend development
+  - cybersecurity
+  - Malaysia tech industry
+  - internships
+  - developer tools
+
+exclude_topics:
+  - celebrity gossip
+  - viral entertainment
+  - unsupported rumours
+  - low-impact sports

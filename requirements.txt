@@ -1,0 +1,7 @@
+feedparser
+requests
+python-dotenv
+PyYAML
+APScheduler
+google-generativeai
+pytest
