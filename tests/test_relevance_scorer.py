@@ -58,3 +58,20 @@ def test_score_articles_sorts_highest_relevance_first():
 
     assert scored[0]["title"] == "Malaysia AI internship opportunities grow"
     assert scored[0]["relevance_score"] > scored[1]["relevance_score"]
+
+
+def test_score_article_uses_interests_field():
+    article = {
+        "title": "AI research breakthrough announced",
+        "raw_summary": "",
+        "category_guess": "technology",
+    }
+    profile = {
+        "interests": ["AI"],
+        "career_goals": [],
+        "priority_locations": [],
+    }
+
+    scored = score_article(article, profile)
+
+    assert scored["relevance_score"] > 0

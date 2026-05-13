@@ -1,4 +1,5 @@
 from typing import Any
+import re
 
 
 TITLE_WEIGHT = 2.0
@@ -22,10 +23,16 @@ def profile_keywords(profile: dict[str, Any]) -> list[str]:
     """Collect profile terms that represent User's news interest"""
     keywords = []
 
-    for field in ("interest", "career_goals", "priority_locations"):
+    for field in ("interests", "career_goals", "priority_locations"):
         keywords.extend(profile.get(field,[]))
 
     return [keyword.lower() for keyword in keywords if keyword]
+
+
+def contains_keyword(text: str, keyword: str) -> bool:
+    """Return True when a keyword appears as a whole word or phrase."""
+    pattern = rf"\b{re.escape(keyword)}\b"
+    return re.search(pattern, text, flags=re.IGNORECASE) is not None
 
 
 def score_article(article: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
@@ -34,9 +41,9 @@ def score_article(article: dict[str, Any], profile: dict[str, Any]) -> dict[str,
     score = 0.0
 
     for keyword in profile_keywords(profile):
-        if keyword in title:
+        if contains_keyword(title, keyword):
             score += TITLE_WEIGHT
-        elif keyword in body:
+        elif contains_keyword(body, keyword):
             score += BODY_WEIGHT
     
     return {**article, "relevance_score":score}
