@@ -20,7 +20,7 @@ def parse_published_at(entry: dict[str, Any]) -> str | None:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
 
-    return parsed.isoformat
+    return parsed.isoformat()
 
 
 def normalize_entry(entry: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
@@ -47,5 +47,21 @@ def fetch_rss_source(source: dict[str, Any]) -> list[dict[str, Any]]:
 
         if article["title"] and article["url"]:
             articles.append(article)
+    
+    return articles
+
+
+def fetch_all_sources(sources: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Fetch articles from all active RSS sources"""
+    articles = []
+
+    for source in sources:
+        if not source.get("is_active", True):
+            continue
+
+        if source.get("source_type") != "rss":
+            continue
+
+        articles.extend(fetch_rss_source(source))
     
     return articles
