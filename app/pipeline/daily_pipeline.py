@@ -14,6 +14,7 @@ from app.db.repositories import (
     get_article_by_url,
 )
 
+
 def run_pipeline_from_articles(
     articles: list[dict[str, Any]],
     profile: dict[str, Any],
@@ -55,27 +56,22 @@ def run_persistent_pipeline_from_articles(
 
     try:
         result = run_pipeline_from_articles(articles, profile, limit=limit)
-        selected_urls = {
-            article.get("url")
-            for article in result["selected_articles"]
-        }
+        selected_urls = {article.get("url") for article in result["selected_articles"]}
 
         article_ids_by_url = {}
 
         for article in result["rejected_articles"]:
             article_id = persist_article_candidate(
-                database_path,
-                article,
-                status="rejected"
+                database_path, article, status="rejected"
             )
             article_ids_by_url[article["url"]] = article_id
 
         for article in result["kept_articles"]:
-            article_status = "selected" if article.get("url") in selected_urls else "kept"
+            article_status = (
+                "selected" if article.get("url") in selected_urls else "kept"
+            )
             article_id = persist_article_candidate(
-                database_path,
-                article,
-                status=article_status
+                database_path, article, status=article_status
             )
             article_ids_by_url[article["url"]] = article_id
 

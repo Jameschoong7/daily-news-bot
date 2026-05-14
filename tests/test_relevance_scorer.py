@@ -46,7 +46,7 @@ def test_score_articles_sorts_highest_relevance_first():
             "title": "Malaysia AI internship opportunities grow",
             "raw_summary": "Software engineering students may benefit.",
             "category_guess": "technology",
-        }
+        },
     ]
     profile = {
         "interests": ["AI", "software engineering"],

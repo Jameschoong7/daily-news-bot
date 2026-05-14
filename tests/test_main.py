@@ -1,6 +1,10 @@
 from app.main import build_digest_from_inputs, build_persistent_digest_from_inputs
 from app.db.database import initialize_database
-from app.db.repositories import get_daily_run_by_id, list_articles, list_digest_items_for_run
+from app.db.repositories import (
+    get_daily_run_by_id,
+    list_articles,
+    list_digest_items_for_run,
+)
 
 
 def test_build_digest_from_inputs_returns_digest_text():

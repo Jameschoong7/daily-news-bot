@@ -8,7 +8,7 @@ def row_to_dict(row: Any) -> dict[str, Any] | None:
     """Convert a SQLite row to a plain dict for easier app usage."""
     if row is None:
         return None
-    
+
     return dict(row)
 
 
@@ -19,7 +19,7 @@ def create_source(
     """Insert one trusted news source and return its database id."""
     if source is None:
         raise ValueError("source is required")
-    
+
     with get_connection(database_path) as connection:
         cursor = connection.execute(
             """
@@ -37,10 +37,9 @@ def create_source(
                 1 if source.get("is_active", True) else 0,
             ),
         )
-        
 
         return cursor.lastrowid
-    
+
 
 def get_source_by_url(
     database_path: Path | str,
@@ -61,10 +60,8 @@ def list_sources(
 ) -> list[dict[str, Any]]:
     """Return all configured sources from the database."""
     with get_connection(database_path) as connection:
-        rows = connection.execute(
-            "SELECT * FROM sources ORDER BY id"
-        ).fetchall()
-    
+        rows = connection.execute("SELECT * FROM sources ORDER BY id").fetchall()
+
     return [dict(row) for row in rows]
 
 
@@ -74,7 +71,7 @@ def create_article(
 ) -> int:
     """Insert one fetched article candidate and return its database id."""
     if article is None:
-          raise ValueError("article is required")
+        raise ValueError("article is required")
 
     with get_connection(database_path) as connection:
         cursor = connection.execute(
@@ -114,11 +111,11 @@ def create_article(
         )
 
         return cursor.lastrowid
-    
+
 
 def get_article_by_url(
     database_path: Path | str,
-    url: str,    
+    url: str,
 ) -> dict[str, Any] | None:
     """Find an article by URL."""
     with get_connection(database_path) as connection:
@@ -126,7 +123,7 @@ def get_article_by_url(
             "SELECT * FROM articles WHERE url = ?",
             (url,),
         ).fetchone()
-    
+
     return row_to_dict(row)
 
 
@@ -135,9 +132,7 @@ def list_articles(
 ) -> list[dict[str, Any]]:
     """Return all stored articles from the database."""
     with get_connection(database_path) as connection:
-        rows = connection.execute(
-            "SELECT * FROM articles ORDER BY id"
-        ).fetchall()
+        rows = connection.execute("SELECT * FROM articles ORDER BY id").fetchall()
 
     return [dict(row) for row in rows]
 
@@ -149,7 +144,7 @@ def create_daily_run(
     """Create a daily run log row and return its database id."""
     if run_date is None:
         raise ValueError("run_date is required")
-    
+
     with get_connection(database_path) as connection:
         cursor = connection.execute(
             """
@@ -160,7 +155,7 @@ def create_daily_run(
         )
 
         return cursor.lastrowid
-    
+
 
 def get_daily_run_by_id(
     database_path: Path | str,
@@ -236,7 +231,7 @@ def create_digest_item(
     """Insert one article selected for a digest and return its id."""
     if digest_item is None:
         raise ValueError("digest_item is required")
-    
+
     with get_connection(database_path) as connection:
         cursor = connection.execute(
             """
@@ -263,7 +258,7 @@ def create_digest_item(
         )
 
         return cursor.lastrowid
-    
+
 
 def list_digest_items_for_run(
     database_path: Path | str,

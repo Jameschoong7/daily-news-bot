@@ -2,7 +2,7 @@ from app.pipeline.pre_filter import filter_articles, should_keep_article
 
 
 def test_should_reject_article_without_title():
-    article = {"title":"", "url":"https://example.com/news"}
+    article = {"title": "", "url": "https://example.com/news"}
 
     keep, reason = should_keep_article(article, excluded_topics=[])
 
@@ -11,7 +11,7 @@ def test_should_reject_article_without_title():
 
 
 def test_should_reject_article_without_url():
-    article = {"title":"Useful news", "url":""}
+    article = {"title": "Useful news", "url": ""}
 
     keep, reason = should_keep_article(article, excluded_topics=[])
 

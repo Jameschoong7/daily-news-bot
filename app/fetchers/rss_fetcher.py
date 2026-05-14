@@ -11,7 +11,7 @@ def parse_published_at(entry: dict[str, Any]) -> str | None:
 
     if not published:
         return None
-    
+
     try:
         parsed = parsedate_to_datetime(published)
     except (TypeError, ValueError):
@@ -28,8 +28,8 @@ def normalize_entry(entry: dict[str, Any], source: dict[str, Any]) -> dict[str, 
     return {
         "source_name": source.get("name"),
         "source_url": source.get("url"),
-        "title": entry.get("title","").strip(),
-        "url": entry.get("link","").strip(),
+        "title": entry.get("title", "").strip(),
+        "url": entry.get("link", "").strip(),
         "published_at": parse_published_at(entry),
         "raw_summary": entry.get("summary", "").strip(),
         "category_guess": source.get("category"),
@@ -47,7 +47,7 @@ def fetch_rss_source(source: dict[str, Any]) -> list[dict[str, Any]]:
 
         if article["title"] and article["url"]:
             articles.append(article)
-    
+
     return articles
 
 
@@ -63,5 +63,5 @@ def fetch_all_sources(sources: list[dict[str, Any]]) -> list[dict[str, Any]]:
             continue
 
         articles.extend(fetch_rss_source(source))
-    
+
     return articles

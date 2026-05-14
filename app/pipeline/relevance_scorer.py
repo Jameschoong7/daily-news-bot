@@ -1,14 +1,13 @@
 from typing import Any
 import re
 
-
 TITLE_WEIGHT = 2.0
 BODY_WEIGHT = 1.0
 
 
 def article_text(article: dict[str, Any]) -> tuple[str, str]:
     """Return title text and supporting text used for relevance scoring."""
-    title = article.get("title","").lower()
+    title = article.get("title", "").lower()
     body = " ".join(
         [
             article.get("raw_summary", ""),
@@ -24,7 +23,7 @@ def profile_keywords(profile: dict[str, Any]) -> list[str]:
     keywords = []
 
     for field in ("interests", "career_goals", "priority_locations"):
-        keywords.extend(profile.get(field,[]))
+        keywords.extend(profile.get(field, []))
 
     return [keyword.lower() for keyword in keywords if keyword]
 
@@ -45,19 +44,17 @@ def score_article(article: dict[str, Any], profile: dict[str, Any]) -> dict[str,
             score += TITLE_WEIGHT
         elif contains_keyword(body, keyword):
             score += BODY_WEIGHT
-    
-    return {**article, "relevance_score":score}
+
+    return {**article, "relevance_score": score}
 
 
 def score_articles(
-        articles: list[dict[str, Any]],
-        profile: dict[str, Any],
+    articles: list[dict[str, Any]],
+    profile: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Score articles and return them from most to least relevant."""
-    scored_articles = [score_article(article,profile) for article in articles]
+    scored_articles = [score_article(article, profile) for article in articles]
 
     return sorted(
-        scored_articles,
-        key=lambda article: article["relevance_score"],
-        reverse=True
+        scored_articles, key=lambda article: article["relevance_score"], reverse=True
     )

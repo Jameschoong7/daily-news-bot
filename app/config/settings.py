@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import os
 import yaml
 
-
 BASE_DIR = Path(__file__).resolve().parents[2]
 CONFIG_DIR = BASE_DIR / "app" / "config"
 

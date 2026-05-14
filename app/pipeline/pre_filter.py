@@ -1,5 +1,6 @@
 from typing import Any
 
+
 def article_text(article: dict[str, Any]) -> str:
     """Combine article fields used for simple text-based filtering."""
     title = article.get("title", "")
@@ -8,22 +9,22 @@ def article_text(article: dict[str, Any]) -> str:
 
 
 def should_keep_article(
-        article: dict[str, Any],
-        excluded_topics: list[str],
+    article: dict[str, Any],
+    excluded_topics: list[str],
 ) -> tuple[bool, str | None]:
     """Decide whether an article passes cheap rule-based filtering."""
-    if not article.get("title","").strip():
+    if not article.get("title", "").strip():
         return False, "missing_title"
-    
-    if not article.get("url","").strip():
+
+    if not article.get("url", "").strip():
         return False, "missing_url"
-    
+
     text = article_text(article)
 
     for topic in excluded_topics:
         if topic.lower() in text:
             return False, "excluded_topic"
-        
+
     return True, None
 
 
@@ -41,6 +42,8 @@ def filter_articles(
         if keep:
             kept.append({**article, "status": "kept", "rejection_reason": None})
         else:
-            rejected.append({**article, "status": "rejected", "rejection_reason": reason})
+            rejected.append(
+                {**article, "status": "rejected", "rejection_reason": reason}
+            )
 
     return kept, rejected

@@ -1,7 +1,14 @@
-from app.pipeline.daily_pipeline import run_persistent_pipeline_from_articles, run_pipeline_from_articles
+from app.pipeline.daily_pipeline import (
+    run_persistent_pipeline_from_articles,
+    run_pipeline_from_articles,
+)
 
 from app.db.database import initialize_database
-from app.db.repositories import get_daily_run_by_id, list_articles, list_digest_items_for_run
+from app.db.repositories import (
+    get_daily_run_by_id,
+    list_articles,
+    list_digest_items_for_run,
+)
 
 
 def test_run_pipeline_from_articles_builds_digest_from_static_articles():
@@ -40,7 +47,9 @@ def test_run_pipeline_from_articles_builds_digest_from_static_articles():
     assert "Celebrity gossip" not in result["digest_text"]
 
 
-def test_run_persistent_pipeline_from_articles_logs_run_articles_and_digest_items(tmp_path):
+def test_run_persistent_pipeline_from_articles_logs_run_articles_and_digest_items(
+    tmp_path,
+):
     database_path = tmp_path / "test_news_bot.db"
     initialize_database(database_path)
 
@@ -176,8 +185,12 @@ def test_persistent_pipeline_reuses_existing_article_for_duplicate_url(tmp_path)
     )
 
     saved_articles = list_articles(database_path)
-    first_digest_items = list_digest_items_for_run(database_path, first_result["run_id"])
-    second_digest_items = list_digest_items_for_run(database_path, second_result["run_id"])
+    first_digest_items = list_digest_items_for_run(
+        database_path, first_result["run_id"]
+    )
+    second_digest_items = list_digest_items_for_run(
+        database_path, second_result["run_id"]
+    )
 
     assert len(saved_articles) == 1
     assert len(first_digest_items) == 1

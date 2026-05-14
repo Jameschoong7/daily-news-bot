@@ -22,7 +22,7 @@ def test_deduplicate_articles_removes_deuplicate_urls():
 
 
 def test_deduplicate_articles_removes_duplicate_normalized_titles():
-    articles =[
+    articles = [
         {
             "title": "Malaysia AI Investment Grows!",
             "url": "https://example.com/story-1",

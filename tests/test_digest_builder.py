@@ -3,9 +3,21 @@ from app.pipeline.digest_builder import build_digest_text, select_top_articles
 
 def test_select_top_articles_returns_highest_scored_articles():
     articles = [
-        {"title": "Low score", "url": "https://example.com/low", "relevance_score": 1.0},
-        {"title": "High score", "url": "https://example.com/high", "relevance_score": 5.0},
-        {"title": "Medium score", "url": "https://example.com/medium", "relevance_score": 3.0},
+        {
+            "title": "Low score",
+            "url": "https://example.com/low",
+            "relevance_score": 1.0,
+        },
+        {
+            "title": "High score",
+            "url": "https://example.com/high",
+            "relevance_score": 5.0,
+        },
+        {
+            "title": "Medium score",
+            "url": "https://example.com/medium",
+            "relevance_score": 3.0,
+        },
     ]
 
     selected = select_top_articles(articles, limit=2)

@@ -17,7 +17,7 @@ def deduplicate_articles(articles: list[dict[str, Any]]) -> list[dict[str, Any]]
 
     for article in articles:
         url = article.get("url", "").strip()
-        title_key = normalize_title(article.get("title",""))
+        title_key = normalize_title(article.get("title", ""))
 
         if url and url in seen_urls:
             continue

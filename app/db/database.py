@@ -1,12 +1,13 @@
 from pathlib import Path
 import sqlite3
 
-
 DEFAULT_DATABASE_PATH = Path("data/news_bot.db")
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 
-def get_connection(database_path: Path | str = DEFAULT_DATABASE_PATH) -> sqlite3.Connection:
+def get_connection(
+    database_path: Path | str = DEFAULT_DATABASE_PATH,
+) -> sqlite3.Connection:
     """Open a SQLite connection with project defaults enabled."""
     connection = sqlite3.connect(database_path)
     connection.row_factory = sqlite3.Row

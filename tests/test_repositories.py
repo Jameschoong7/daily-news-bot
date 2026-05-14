@@ -1,5 +1,18 @@
 from app.db.database import initialize_database
-from app.db.repositories import create_source, get_source_by_url, list_sources, create_article, get_article_by_url, list_articles, create_daily_run, complete_daily_run, fail_daily_run, get_daily_run_by_id, create_digest_item, list_digest_items_for_run
+from app.db.repositories import (
+    create_source,
+    get_source_by_url,
+    list_sources,
+    create_article,
+    get_article_by_url,
+    list_articles,
+    create_daily_run,
+    complete_daily_run,
+    fail_daily_run,
+    get_daily_run_by_id,
+    create_digest_item,
+    list_digest_items_for_run,
+)
 
 
 def test_create_and_get_source_by_url(tmp_path):
@@ -37,7 +50,7 @@ def test_list_sources_returns_all_sources(tmp_path):
             "category": "technology",
             "trust_level": "high",
             "is_active": True,
-        }
+        },
     )
 
     sources = list_sources(database_path)
