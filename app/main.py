@@ -8,6 +8,8 @@ from app.pipeline.daily_pipeline import (
     run_pipeline_from_articles,
     run_persistent_pipeline_from_articles,
 )
+from app.ai.gemini_provider import GeminiProvider
+from app.ai.provider_base import AIProvider
 
 
 def build_digest_from_inputs(
@@ -27,6 +29,7 @@ def build_persistent_digest_from_inputs(
     profile: dict[str, Any],
     articles: list[dict[str, Any]] | None = None,
     run_date: str | None = None,
+    ai_provider: AIProvider | None = None,
 ) -> dict[str, Any]:
     """Build a digest and persist run/article/digest logs."""
     fetched_articles = articles if articles is not None else fetch_all_sources(sources)
@@ -35,13 +38,28 @@ def build_persistent_digest_from_inputs(
         articles=fetched_articles,
         profile=profile,
         run_date=run_date or date.today().isoformat(),
+        ai_provider=ai_provider,
     )
+
+
+def build_ai_provider_from_environment(
+    environment: dict[str, str | None],
+    provider_factory=GeminiProvider,
+) -> AIProvider | None:
+    """Create an AI provider only when the required API key is configured."""
+    api_key = environment.get("gemini_api_key")
+
+    if not api_key:
+        return None
+
+    return provider_factory(api_key)
 
 
 def main() -> None:
     """Run the local non-AI daily news pipeline, persist logs, and print the digest."""
     environment = load_environment()
     database_path = environment["database_path"] or "data/news_bot.db"
+    ai_provider = build_ai_provider_from_environment(environment)
 
     initialize_database(database_path)
 
@@ -51,6 +69,7 @@ def main() -> None:
         database_path=database_path,
         sources=sources,
         profile=profile,
+        ai_provider=ai_provider,
     )
 
     print(result["digest_text"])

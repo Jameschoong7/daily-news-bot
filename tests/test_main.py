@@ -1,4 +1,8 @@
-from app.main import build_digest_from_inputs, build_persistent_digest_from_inputs
+from app.main import (
+    build_ai_provider_from_environment,
+    build_digest_from_inputs,
+    build_persistent_digest_from_inputs,
+)
 from app.db.database import initialize_database
 from app.db.repositories import (
     get_daily_run_by_id,
@@ -68,3 +72,18 @@ def test_build_persistent_digest_from_inputs_writes_run_logs(tmp_path):
     assert saved_run["status"] == "completed"
     assert len(saved_articles) == 1
     assert len(saved_digest_items) == 1
+
+
+def test_build_ai_provider_returns_none_without_gemini_api_key():
+    provider = build_ai_provider_from_environment({"gemini_api_key": None})
+
+    assert provider is None
+
+
+def test_build_ai_provider_creates_provider_when_gemini_api_key_exists():
+    provider = build_ai_provider_from_environment(
+        {"gemini_api_key": "fake-key"},
+        provider_factory=lambda api_key: f"provider:{api_key}",
+    )
+
+    assert provider == "provider:fake-key"
