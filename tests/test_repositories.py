@@ -1,5 +1,5 @@
 from app.db.database import initialize_database
-from app.db.repositories import create_source, get_source_by_url, list_sources, create_article, get_article_by_url, list_articles
+from app.db.repositories import create_source, get_source_by_url, list_sources, create_article, get_article_by_url, list_articles, create_daily_run, complete_daily_run, fail_daily_run, get_daily_run_by_id
 
 
 def test_create_and_get_source_by_url(tmp_path):
@@ -114,3 +114,44 @@ def test_list_articles_returns_all_articles(tmp_path):
 
     assert len(articles) == 1
     assert articles[0]["title"] == "Standalone article"
+
+
+def test_create_and_complete_daily_run(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    run_id = create_daily_run(database_path, run_date="2026-05-14")
+
+    complete_daily_run(
+        database_path,
+        run_id=run_id,
+        articles_fetched=10,
+        articles_after_filter=8,
+        articles_selected=5,
+        telegram_sent=False,
+    )
+
+    saved = get_daily_run_by_id(database_path, run_id)
+
+    assert saved["run_date"] == "2026-05-14"
+    assert saved["status"] == "completed"
+    assert saved["articles_fetched"] == 10
+    assert saved["articles_after_filter"] == 8
+    assert saved["articles_selected"] == 5
+    assert saved["telegram_sent"] == 0
+    assert saved["completed_at"] is not None
+
+
+def test_fail_daily_run_records_error_message(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    run_id = create_daily_run(database_path, run_date="2026-05-14")
+
+    fail_daily_run(database_path, run_id=run_id, error_message="RSS fetch failed")
+
+    saved = get_daily_run_by_id(database_path, run_id)
+
+    assert saved["status"] == "failed"
+    assert saved["error_message"] == "RSS fetch failed"
+    assert saved["completed_at"] is not None

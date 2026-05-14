@@ -140,3 +140,90 @@ def list_articles(
         ).fetchall()
 
     return [dict(row) for row in rows]
+
+
+def create_daily_run(
+    database_path: Path | str = DEFAULT_DATABASE_PATH,
+    run_date: str | None = None,
+) -> int:
+    """Create a daily run log row and return its database id."""
+    if run_date is None:
+        raise ValueError("run_date is required")
+    
+    with get_connection(database_path) as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO daily_runs (run_date, status)
+            VALUES (COALESCE(?, DATE('now')), 'running')
+            """,
+            (run_date,),
+        )
+
+        return cursor.lastrowid
+    
+
+def get_daily_run_by_id(
+    database_path: Path | str,
+    run_id: int,
+) -> dict[str, Any] | None:
+    """Find a daily run by id."""
+    with get_connection(database_path) as connection:
+        row = connection.execute(
+            "SELECT * FROM daily_runs WHERE id = ?",
+            (run_id,),
+        ).fetchone()
+
+    return row_to_dict(row)
+
+
+def complete_daily_run(
+    database_path: Path | str,
+    run_id: int,
+    articles_fetched: int,
+    articles_after_filter: int,
+    articles_selected: int,
+    telegram_sent: bool,
+) -> None:
+    """Mark a daily run as completed with final article counts."""
+    with get_connection(database_path) as connection:
+        connection.execute(
+            """
+            UPDATE daily_runs
+            SET
+                completed_at = CURRENT_TIMESTAMP,
+                status = 'completed',
+                articles_fetched = ?,
+                articles_after_filter = ?,
+                articles_selected = ?,
+                telegram_sent = ?,
+                error_message = NULL
+            WHERE id = ?
+            """,
+            (
+                articles_fetched,
+                articles_after_filter,
+                articles_selected,
+                1 if telegram_sent else 0,
+                run_id,
+            ),
+        )
+
+
+def fail_daily_run(
+    database_path: Path | str,
+    run_id: int,
+    error_message: str,
+) -> None:
+    """Mark a daily run as failed and store the error message."""
+    with get_connection(database_path) as connection:
+        connection.execute(
+            """
+            UPDATE daily_runs
+            SET
+                completed_at = CURRENT_TIMESTAMP,
+                status = 'failed',
+                error_message = ?
+            WHERE id = ?
+            """,
+            (error_message, run_id),
+        )
