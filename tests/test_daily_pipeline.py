@@ -137,3 +137,50 @@ def test_persistent_pipeline_logs_kept_articles_that_are_not_selected(tmp_path):
     assert result["selected_count"] == 1
     assert len(saved_articles) == 2
     assert {article["status"] for article in saved_articles} == {"selected", "kept"}
+
+
+def test_persistent_pipeline_reuses_existing_article_for_duplicate_url(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    articles = [
+        {
+            "title": "Malaysia AI internship opportunities grow",
+            "url": "https://example.com/ai",
+            "raw_summary": "Software engineering students may benefit.",
+            "source_name": "Example News",
+            "category_guess": "technology",
+            "credibility_score": 1.0,
+        }
+    ]
+    profile = {
+        "interests": ["AI"],
+        "career_goals": ["internship"],
+        "priority_locations": ["Malaysia"],
+        "exclude_topics": [],
+    }
+
+    first_result = run_persistent_pipeline_from_articles(
+        database_path=database_path,
+        articles=articles,
+        profile=profile,
+        run_date="2026-05-14",
+        limit=1,
+    )
+    second_result = run_persistent_pipeline_from_articles(
+        database_path=database_path,
+        articles=articles,
+        profile=profile,
+        run_date="2026-05-14",
+        limit=1,
+    )
+
+    saved_articles = list_articles(database_path)
+    first_digest_items = list_digest_items_for_run(database_path, first_result["run_id"])
+    second_digest_items = list_digest_items_for_run(database_path, second_result["run_id"])
+
+    assert len(saved_articles) == 1
+    assert len(first_digest_items) == 1
+    assert len(second_digest_items) == 1
+    assert first_digest_items[0]["article_id"] == saved_articles[0]["id"]
+    assert second_digest_items[0]["article_id"] == saved_articles[0]["id"]
