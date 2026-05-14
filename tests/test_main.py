@@ -2,6 +2,8 @@ from app.main import (
     build_ai_provider_from_environment,
     build_digest_from_inputs,
     build_persistent_digest_from_inputs,
+    build_telegram_sender_from_environment,
+    send_digest_if_configured,
 )
 from app.db.database import initialize_database
 from app.db.repositories import (
@@ -87,3 +89,49 @@ def test_build_ai_provider_creates_provider_when_gemini_api_key_exists():
     )
 
     assert provider == "provider:fake-key"
+
+
+def test_build_telegram_sender_returns_none_without_token_or_chat_id():
+    sender = build_telegram_sender_from_environment(
+        {
+            "telegram_bot_token": None,
+            "telegram_chat_id": "12345",
+        }
+    )
+
+    assert sender is None
+
+
+def test_build_telegram_sender_creates_sender_when_configured():
+    sender = build_telegram_sender_from_environment(
+        {
+            "telegram_bot_token": "fake-token",
+            "telegram_chat_id": "12345",
+        },
+        sender_factory=lambda bot_token, chat_id: f"sender:{bot_token}:{chat_id}",
+    )
+
+    assert sender == "sender:fake-token:12345"
+
+
+class FakeSender:
+    def __init__(self):
+        self.messages = []
+
+    def send_message(self, text: str) -> None:
+        self.messages.append(text)
+
+
+def test_send_digest_if_configured_sends_when_sender_exists():
+    sender = FakeSender()
+
+    sent = send_digest_if_configured("Digest text", sender)
+
+    assert sent is True
+    assert sender.messages == ["Digest text"]
+
+
+def test_send_digest_if_configured_skips_when_sender_missing():
+    sent = send_digest_if_configured("Digest text", sender=None)
+
+    assert sent is False

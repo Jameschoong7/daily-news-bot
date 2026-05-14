@@ -10,6 +10,7 @@ from app.pipeline.daily_pipeline import (
 )
 from app.ai.gemini_provider import GeminiProvider
 from app.ai.provider_base import AIProvider
+from app.delivery.telegram_sender import TelegramSender
 
 
 def build_digest_from_inputs(
@@ -60,6 +61,7 @@ def main() -> None:
     environment = load_environment()
     database_path = environment["database_path"] or "data/news_bot.db"
     ai_provider = build_ai_provider_from_environment(environment)
+    telegram_sender = build_telegram_sender_from_environment(environment)
 
     initialize_database(database_path)
 
@@ -72,7 +74,39 @@ def main() -> None:
         ai_provider=ai_provider,
     )
 
+    telegram_sent = send_digest_if_configured(result["digest_text"], telegram_sender)
+
     print(result["digest_text"])
+    if telegram_sent:
+        print("\nTelegram delivery: sent")
+    else:
+        print("\nTelegram delivery: skipped")
+
+
+def build_telegram_sender_from_environment(
+    environment: dict[str, str | None],
+    sender_factory=TelegramSender,
+) -> TelegramSender | None:
+    """Create a Telegram sender only when bot token and chat id are configured."""
+    bot_token = environment.get("telegram_bot_token")
+    chat_id = environment.get("telegram_chat_id")
+
+    if not bot_token or not chat_id:
+        return None
+
+    return sender_factory(bot_token, chat_id)
+
+
+def send_digest_if_configured(
+    digest_text: str,
+    sender: TelegramSender | None,
+) -> bool:
+    """Send digest through Telegram when a sender is configured."""
+    if sender is None:
+        return False
+
+    sender.send_message(digest_text)
+    return True
 
 
 if __name__ == "__main__":
