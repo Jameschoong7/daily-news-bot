@@ -1,12 +1,12 @@
 import json
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
 
 from app.ai.prompts import build_article_summary_prompt
 from app.ai.provider_base import AIProvider, ArticleSummary
 
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 
 
 def parse_summary_response(response_text: str) -> ArticleSummary:
@@ -25,18 +25,18 @@ class GeminiProvider(AIProvider):
     def __init__(
         self,
         api_key: str | None = None,
-        model: Any | None = None,
+        client: Any | None = None,
         model_name: str = DEFAULT_GEMINI_MODEL,
     ) -> None:
-        if model is not None:
-            self.model = model
-            return
+        if client is not None:
+            self.client = client
+        else:
+            if api_key is None:
+                raise ValueError("api_key is required when client is not provided")
 
-        if api_key is None:
-            raise ValueError("api_key is required when model is not provided")
+            self.client = genai.Client(api_key=api_key)
 
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(model_name)
+        self.model_name = model_name
 
     def summarize_article(
         self,
@@ -45,6 +45,8 @@ class GeminiProvider(AIProvider):
     ) -> ArticleSummary:
         """Summarise one article with Gemini."""
         prompt = build_article_summary_prompt(article, profile or {})
-        response = self.model.generate_content(prompt)
+        response = self.client.models.generate_content(
+            model=self.model_name, contents=prompt
+        )
 
         return parse_summary_response(response.text)

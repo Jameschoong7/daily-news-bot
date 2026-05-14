@@ -3,6 +3,6 @@ requests
 python-dotenv
 PyYAML
 APScheduler
-google-generativeai
+google-genai
 pytest
 black

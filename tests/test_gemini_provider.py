@@ -5,10 +5,16 @@ class FakeResponse:
     text = '{"final_summary": "Short summary.", "why_it_matters": "Useful for internship prep."}'
 
 
-class FakeModel:
-    def generate_content(self, prompt: str):
-        self.last_prompt = prompt
+class FakeModels:
+    def generate_content(self, model: str, contents: str):
+        self.last_model = model
+        self.last_prompt = contents
         return FakeResponse()
+
+
+class FakeClient:
+    def __init__(self):
+        self.models = FakeModels()
 
 
 def test_parse_summary_response_returns_article_summary():
@@ -21,8 +27,8 @@ def test_parse_summary_response_returns_article_summary():
 
 
 def test_gemini_provider_uses_model_to_summarize_article():
-    model = FakeModel()
-    provider = GeminiProvider(model=model)
+    client = FakeClient()
+    provider = GeminiProvider(client=client)
     article = {
         "title": "Malaysia AI internship opportunities grow",
         "raw_summary": "Software engineering students may benefit.",
@@ -37,4 +43,4 @@ def test_gemini_provider_uses_model_to_summarize_article():
 
     assert result.final_summary == "Short summary."
     assert result.why_it_matters == "Useful for internship prep."
-    assert "Malaysia AI internship opportunities grow" in model.last_prompt
+    assert "Malaysia AI internship opportunities grow" in client.models.last_prompt
