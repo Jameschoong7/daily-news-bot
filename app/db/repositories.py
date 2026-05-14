@@ -227,3 +227,57 @@ def fail_daily_run(
             """,
             (error_message, run_id),
         )
+
+
+def create_digest_item(
+    database_path: Path | str = DEFAULT_DATABASE_PATH,
+    digest_item: dict[str, Any] | None = None,
+) -> int:
+    """Insert one article selected for a digest and return its id."""
+    if digest_item is None:
+        raise ValueError("digest_item is required")
+    
+    with get_connection(database_path) as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO digest_items (
+                run_id,
+                article_id,
+                rank_position,
+                final_summary,
+                why_it_matters,
+                category,
+                sent_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                digest_item["run_id"],
+                digest_item["article_id"],
+                digest_item["rank_position"],
+                digest_item["final_summary"],
+                digest_item["why_it_matters"],
+                digest_item.get("category"),
+                digest_item.get("sent_at"),
+            ),
+        )
+
+        return cursor.lastrowid
+    
+
+def list_digest_items_for_run(
+    database_path: Path | str,
+    run_id: int,
+) -> list[dict[str, Any]]:
+    """Return digest items for one run ordered by display rank."""
+    with get_connection(database_path) as connection:
+        rows = connection.execute(
+            """
+            SELECT * FROM digest_items
+            WHERE run_id = ?
+            ORDER BY rank_position
+            """,
+            (run_id,),
+        ).fetchall()
+
+    return [dict(row) for row in rows]

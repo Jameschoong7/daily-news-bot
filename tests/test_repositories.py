@@ -1,5 +1,5 @@
 from app.db.database import initialize_database
-from app.db.repositories import create_source, get_source_by_url, list_sources, create_article, get_article_by_url, list_articles, create_daily_run, complete_daily_run, fail_daily_run, get_daily_run_by_id
+from app.db.repositories import create_source, get_source_by_url, list_sources, create_article, get_article_by_url, list_articles, create_daily_run, complete_daily_run, fail_daily_run, get_daily_run_by_id, create_digest_item, list_digest_items_for_run
 
 
 def test_create_and_get_source_by_url(tmp_path):
@@ -155,3 +155,49 @@ def test_fail_daily_run_records_error_message(tmp_path):
     assert saved["status"] == "failed"
     assert saved["error_message"] == "RSS fetch failed"
     assert saved["completed_at"] is not None
+
+
+def test_create_and_list_digest_items_for_run(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    run_id = create_daily_run(database_path, run_date="2026-05-14")
+    article_id = create_article(
+        database_path,
+        {
+            "source_id": None,
+            "title": "Malaysia AI hiring grows",
+            "url": "https://example.com/article",
+            "published_at": None,
+            "raw_summary": "RSS summary.",
+            "content_text": None,
+            "category_guess": "technology",
+            "credibility_score": 1.0,
+            "freshness_score": None,
+            "relevance_score": 4.0,
+            "overall_score": 4.0,
+            "status": "selected",
+            "rejection_reason": None,
+        },
+    )
+
+    digest_item_id = create_digest_item(
+        database_path,
+        {
+            "run_id": run_id,
+            "article_id": article_id,
+            "rank_position": 1,
+            "final_summary": "Short summary for Telegram.",
+            "why_it_matters": "Relevant to AI internship preparation.",
+            "category": "technology",
+            "sent_at": None,
+        },
+    )
+
+    items = list_digest_items_for_run(database_path, run_id)
+
+    assert digest_item_id is not None
+    assert len(items) == 1
+    assert items[0]["rank_position"] == 1
+    assert items[0]["final_summary"] == "Short summary for Telegram."
+    assert items[0]["why_it_matters"] == "Relevant to AI internship preparation."
