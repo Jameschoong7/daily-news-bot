@@ -47,27 +47,29 @@ The bot is designed for personal use, not multi-user SaaS.
 
 ```text
 app/
-ai/             AI provider interface, Gemini provider, prompts
-config/         settings, RSS sources, user profile
-db/             SQLite schema, database connection, repositories
-delivery/       Telegram sender
-fetchers/       RSS fetching and article extraction placeholder
-pipeline/       filtering, scoring, deduplication, digest pipeline
-scheduler/      scheduler placeholder
-utils/          utilities placeholder
+    ai/           AI provider interface, Gemini provider, prompts
+    config/       settings, RSS sources, user profile
+    db/           SQLite schema, database connection, repositories
+    delivery/     Telegram sender
+    fetchers/     RSS fetching and article extraction placeholder
+    pipeline/     filtering, scoring, deduplication, digest pipeline
+    scheduler/    scheduler placeholder
+    utils/        utilities placeholder
 tests/            unit tests
 data/             local SQLite database, ignored by Git
 logs/             local logs, ignored by Git
-
+```
 ## Environment Variables
 
 Create a .env file based on .env.example:
 
+```env
 GEMINI_API_KEY=your_gemini_api_key_here
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 TELEGRAM_CHAT_ID=your_telegram_chat_id_here
 DATABASE_PATH=data/news_bot.db
 LOG_LEVEL=INFO
+```
 
 All external services are optional for local development:
 
@@ -76,23 +78,31 @@ All external services are optional for local development:
 
 ## Setup
 
+ ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 .venv/bin/python -m pip install -r requirements.txt
+```
 
 ## Run Tests
 
 Use the venv-safe command:
 
+```bash
 .venv/bin/python -m pytest
+```
 
 Format code:
 
+```bash
 .venv/bin/python -m black app tests
+```
 
 ## Run Locally
 
+```bash
 .venv/bin/python -m app.main
+```
 
 This will:
 
@@ -166,3 +176,4 @@ Then run:
 
 ```bash
 .venv/bin/python -m pytest
+```
