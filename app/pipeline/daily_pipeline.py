@@ -13,6 +13,7 @@ from app.db.repositories import (
     fail_daily_run,
     get_article_by_url,
 )
+from app.ai.provider_base import AIProvider
 
 
 def run_pipeline_from_articles(
@@ -50,6 +51,7 @@ def run_persistent_pipeline_from_articles(
     profile: dict[str, Any],
     run_date: str,
     limit: int = 5,
+    ai_provider: AIProvider | None = None,
 ) -> dict[str, Any]:
     """Run the non-AI pipeline and persist run/article/digest logs."""
     run_id = create_daily_run(database_path, run_date=run_date)
@@ -76,14 +78,21 @@ def run_persistent_pipeline_from_articles(
             article_ids_by_url[article["url"]] = article_id
 
         for rank, article in enumerate(result["selected_articles"], start=1):
+            if ai_provider is not None:
+                summary = ai_provider.summarize_article(article, profile)
+                final_summary = summary.final_summary
+                why_it_matters = summary.why_it_matters
+            else:
+                final_summary = article.get("raw_summary") or article["title"]
+                why_it_matters = "Matched the configured relevance profile."
             create_digest_item(
                 database_path,
                 {
                     "run_id": run_id,
                     "article_id": article_ids_by_url[article["url"]],
                     "rank_position": rank,
-                    "final_summary": article.get("raw_summary") or article["title"],
-                    "why_it_matters": "Matched the configured relevance profile.",
+                    "final_summary": final_summary,
+                    "why_it_matters": why_it_matters,
                     "category": article.get("category_guess"),
                     "sent_at": None,
                 },
