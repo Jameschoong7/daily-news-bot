@@ -246,3 +246,7 @@ def test_persistent_pipeline_uses_ai_provider_for_digest_items(tmp_path):
         "AI summary for Malaysia AI internship opportunities grow"
     )
     assert digest_items[0]["why_it_matters"] == "AI-generated relevance explanation."
+    assert (
+        "AI summary for Malaysia AI internship opportunities grow"
+        in result["digest_text"]
+    )

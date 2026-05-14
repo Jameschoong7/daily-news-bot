@@ -77,6 +77,8 @@ def run_persistent_pipeline_from_articles(
             )
             article_ids_by_url[article["url"]] = article_id
 
+        digest_records = []
+
         for rank, article in enumerate(result["selected_articles"], start=1):
             if ai_provider is not None:
                 summary = ai_provider.summarize_article(article, profile)
@@ -85,6 +87,18 @@ def run_persistent_pipeline_from_articles(
             else:
                 final_summary = article.get("raw_summary") or article["title"]
                 why_it_matters = "Matched the configured relevance profile."
+
+            digest_records.append(
+                {
+                    "rank_position": rank,
+                    "title": article.get("title", "Untitled"),
+                    "final_summary": final_summary,
+                    "why_it_matters": why_it_matters,
+                    "category": article.get("category_guess"),
+                    "url": article.get("url", ""),
+                }
+            )
+
             create_digest_item(
                 database_path,
                 {
@@ -107,7 +121,9 @@ def run_persistent_pipeline_from_articles(
             telegram_sent=False,
         )
 
-        return {**result, "run_id": run_id}
+        digest_text = build_digest_text_from_digest_records(digest_records)
+
+        return {**result, "run_id": run_id, "digest_text": digest_text}
 
     except Exception as error:
         fail_daily_run(database_path, run_id=run_id, error_message=str(error))
@@ -133,3 +149,25 @@ def persist_article_candidate(
             "overall_score": article.get("relevance_score"),
         },
     )
+
+
+def build_digest_text_from_digest_records(digest_records: list[dict[str, Any]]) -> str:
+    """Format final digest records after optional AI summarisation."""
+    if not digest_records:
+        return "No relevant articles found today."
+
+    lines = ["Daily News Digest", ""]
+
+    for item in digest_records:
+        lines.extend(
+            [
+                f"{item['rank_position']}. {item['title']}",
+                f"Summary: {item['final_summary']}",
+                f"Why it matters: {item['why_it_matters']}",
+                f"Category: {item.get('category') or 'uncategorized'}",
+                item["url"],
+                "",
+            ]
+        )
+
+    return "\n".join(lines).strip()
