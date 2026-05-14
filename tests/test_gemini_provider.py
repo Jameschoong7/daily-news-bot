@@ -55,7 +55,7 @@ def test_parse_summary_response_handles_markdown_json_fence():
         }
 
         """)
-    
+
     assert result.final_summary == "Short summary."
     assert result.why_it_matters == "Useful for internship prep."
 

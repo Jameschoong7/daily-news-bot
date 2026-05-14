@@ -22,6 +22,13 @@ class FakeAIProvider:
         )
 
 
+class FailingAIProvider:
+    def summarize_article(
+        self, article: dict, profile: dict | None = None
+    ) -> ArticleSummary:
+        raise ValueError("Gemini returned invalid JSON")
+
+
 def test_run_pipeline_from_articles_builds_digest_from_static_articles():
     articles = [
         {
@@ -250,3 +257,44 @@ def test_persistent_pipeline_uses_ai_provider_for_digest_items(tmp_path):
         "AI summary for Malaysia AI internship opportunities grow"
         in result["digest_text"]
     )
+
+
+def test_persistent_pipeline_falls_back_when_ai_provider_fails(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    articles = [
+        {
+            "title": "Malaysia AI internship opportunities grow",
+            "url": "https://example.com/ai",
+            "raw_summary": "RSS fallback summary.",
+            "source_name": "Example News",
+            "category_guess": "technology",
+            "credibility_score": 1.0,
+        }
+    ]
+    profile = {
+        "interests": ["AI"],
+        "career_goals": ["internship"],
+        "priority_locations": ["Malaysia"],
+        "exclude_topics": [],
+    }
+
+    result = run_persistent_pipeline_from_articles(
+        database_path=database_path,
+        articles=articles,
+        profile=profile,
+        run_date="2026-05-14",
+        limit=1,
+        ai_provider=FailingAIProvider(),
+    )
+
+    digest_items = list_digest_items_for_run(database_path, result["run_id"])
+    saved_run = get_daily_run_by_id(database_path, result["run_id"])
+
+    assert saved_run["status"] == "completed"
+    assert digest_items[0]["final_summary"] == "RSS fallback summary."
+    assert digest_items[0]["why_it_matters"] == (
+        "Matched the configured relevance profile. AI summary failed: Gemini returned invalid JSON"
+    )
+    assert "RSS fallback summary." in result["digest_text"]

@@ -80,13 +80,11 @@ def run_persistent_pipeline_from_articles(
         digest_records = []
 
         for rank, article in enumerate(result["selected_articles"], start=1):
-            if ai_provider is not None:
-                summary = ai_provider.summarize_article(article, profile)
-                final_summary = summary.final_summary
-                why_it_matters = summary.why_it_matters
-            else:
-                final_summary = article.get("raw_summary") or article["title"]
-                why_it_matters = "Matched the configured relevance profile."
+            final_summary, why_it_matters = summarize_selected_article(
+                article=article,
+                profile=profile,
+                ai_provider=ai_provider,
+            )
 
             digest_records.append(
                 {
@@ -172,3 +170,23 @@ def build_digest_text_from_digest_records(digest_records: list[dict[str, Any]]) 
         )
 
     return "\n".join(lines).strip()
+
+
+def summarize_selected_article(
+    article: dict[str, Any],
+    profile: dict[str, Any],
+    ai_provider: AIProvider | None,
+) -> tuple[str, str]:
+    """Summarise an article with AI when available, otherwise use safe fallback text."""
+    fallback_summary = article.get("raw_summary") or article["title"]
+    fallback_reason = "Matched the configured relevance profile."
+
+    if ai_provider is None:
+        return fallback_summary, fallback_reason
+
+    try:
+        summary = ai_provider.summarize_article(article, profile)
+    except Exception as error:
+        return fallback_summary, f"{fallback_reason} AI summary failed: {error}"
+
+    return summary.final_summary, summary.why_it_matters
