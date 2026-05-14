@@ -34,3 +34,18 @@ def test_telegram_sender_posts_message_to_bot_api():
         "disable_web_page_preview": False,
     }
     assert call["timeout"] == 10
+
+
+def test_telegram_sender_splits_long_messages():
+    http_client = FakeHttpClient()
+    sender = TelegramSender(
+        bot_token="fake-token",
+        chat_id="12345",
+        http_client=http_client,
+        max_message_length=20,
+    )
+
+    sender.send_message("First paragraph.\n\nSecond paragraph.\n\nThird paragraph.")
+
+    assert len(http_client.calls) > 1
+    assert all(len(call["json"]["text"]) <= 20 for call in http_client.calls)
