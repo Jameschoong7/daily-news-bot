@@ -276,3 +276,19 @@ def list_digest_items_for_run(
         ).fetchall()
 
     return [dict(row) for row in rows]
+
+
+def mark_daily_run_telegram_sent(
+    database_path: Path | str,
+    run_id: int,
+) -> None:
+    """Record that Telegram delivery succeeded for a run."""
+    with get_connection(database_path) as connection:
+        connection.execute(
+            """
+            UPDATE daily_runs
+            SET telegram_sent = 1
+            WHERE id = ?
+            """,
+            (run_id,),
+        )

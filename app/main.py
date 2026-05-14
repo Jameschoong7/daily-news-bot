@@ -11,6 +11,7 @@ from app.pipeline.daily_pipeline import (
 from app.ai.gemini_provider import GeminiProvider
 from app.ai.provider_base import AIProvider
 from app.delivery.telegram_sender import TelegramSender
+from app.db.repositories import mark_daily_run_telegram_sent
 
 
 def build_digest_from_inputs(
@@ -78,6 +79,7 @@ def main() -> None:
 
     print(result["digest_text"])
     if telegram_sent:
+        mark_daily_run_telegram_sent(database_path, result["run_id"])
         print("\nTelegram delivery: sent")
     else:
         print("\nTelegram delivery: skipped")

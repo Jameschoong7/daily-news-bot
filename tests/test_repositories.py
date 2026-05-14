@@ -12,6 +12,7 @@ from app.db.repositories import (
     get_daily_run_by_id,
     create_digest_item,
     list_digest_items_for_run,
+    mark_daily_run_telegram_sent,
 )
 
 
@@ -214,3 +215,24 @@ def test_create_and_list_digest_items_for_run(tmp_path):
     assert items[0]["rank_position"] == 1
     assert items[0]["final_summary"] == "Short summary for Telegram."
     assert items[0]["why_it_matters"] == "Relevant to AI internship preparation."
+
+
+def test_mark_daily_run_telegram_sent_updates_flag(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    run_id = create_daily_run(database_path, run_date="2026-05-14")
+    complete_daily_run(
+        database_path,
+        run_id=run_id,
+        articles_fetched=1,
+        articles_after_filter=1,
+        articles_selected=1,
+        telegram_sent=False,
+    )
+
+    mark_daily_run_telegram_sent(database_path, run_id)
+
+    saved = get_daily_run_by_id(database_path, run_id)
+
+    assert saved["telegram_sent"] == 1
