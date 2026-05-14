@@ -15,6 +15,8 @@ class AIProvider(ABC):
     """Interface for swappable AI summarisation providers."""
 
     @abstractmethod
-    def summarize_article(self, article: dict[str, Any]) -> ArticleSummary:
+    def summarize_article(
+        self, article: dict[str, Any], profile: dict[str, Any] | None = None
+    ) -> ArticleSummary:
         """Generate summary text and why-it-matters text for one article"""
         raise NotImplementedError

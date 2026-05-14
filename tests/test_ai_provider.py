@@ -2,7 +2,9 @@ from app.ai.provider_base import AIProvider, ArticleSummary
 
 
 class FakeProvider(AIProvider):
-    def summarize_article(self, article: dict) -> ArticleSummary:
+    def summarize_article(
+        self, article: dict, profile: dict | None = None
+    ) -> ArticleSummary:
         return ArticleSummary(
             final_summary=f"Summary: {article['title']}",
             why_it_matters="Relevant to the configured profile.",
