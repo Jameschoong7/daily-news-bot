@@ -171,9 +171,3 @@ Repeated article URLs reuse existing article rows to avoid duplicate article rec
 - Add semantic relevance scoring
 - Add stronger logging
 
-
-Then run:
-
-```bash
-.venv/bin/python -m pytest
-```
