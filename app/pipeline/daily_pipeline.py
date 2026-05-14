@@ -11,6 +11,7 @@ from app.db.repositories import (
     create_daily_run,
     create_digest_item,
     fail_daily_run,
+    get_article_by_url,
 )
 
 def run_pipeline_from_articles(
@@ -62,25 +63,19 @@ def run_persistent_pipeline_from_articles(
         article_ids_by_url = {}
 
         for article in result["rejected_articles"]:
-            article_id = create_article(
+            article_id = persist_article_candidate(
                 database_path,
-                {
-                    **article,
-                    "status": "rejected",
-                    "overall_score": article.get("relevance_score"),
-                },
+                article,
+                status="rejected"
             )
             article_ids_by_url[article["url"]] = article_id
 
         for article in result["kept_articles"]:
             article_status = "selected" if article.get("url") in selected_urls else "kept"
-            article_id = create_article(
+            article_id = persist_article_candidate(
                 database_path,
-                {
-                    **article,
-                    "status": article_status,
-                    "overall_score": article.get("relevance_score"),
-                },
+                article,
+                status=article_status
             )
             article_ids_by_url[article["url"]] = article_id
 
@@ -112,3 +107,24 @@ def run_persistent_pipeline_from_articles(
     except Exception as error:
         fail_daily_run(database_path, run_id=run_id, error_message=str(error))
         raise
+
+
+def persist_article_candidate(
+    database_path: Path | str,
+    article: dict[str, Any],
+    status: str,
+) -> int:
+    """Create an article row or reuse the existing row for the same URL."""
+    existing_article = get_article_by_url(database_path, article["url"])
+
+    if existing_article is not None:
+        return existing_article["id"]
+
+    return create_article(
+        database_path,
+        {
+            **article,
+            "status": status,
+            "overall_score": article.get("relevance_score"),
+        },
+    )
