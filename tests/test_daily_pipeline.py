@@ -92,3 +92,48 @@ def test_run_persistent_pipeline_from_articles_logs_run_articles_and_digest_item
     assert len(saved_digest_items) == 1
     assert saved_digest_items[0]["rank_position"] == 1
     assert "Malaysia AI internship opportunities grow" in result["digest_text"]
+
+
+def test_persistent_pipeline_logs_kept_articles_that_are_not_selected(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    articles = [
+        {
+            "title": "Malaysia AI internship opportunities grow",
+            "url": "https://example.com/ai-1",
+            "raw_summary": "Software engineering students may benefit.",
+            "source_name": "Example News",
+            "category_guess": "technology",
+            "credibility_score": 1.0,
+        },
+        {
+            "title": "Malaysia software engineering hiring grows",
+            "url": "https://example.com/ai-2",
+            "raw_summary": "Backend internship roles are increasing.",
+            "source_name": "Example News",
+            "category_guess": "technology",
+            "credibility_score": 1.0,
+        },
+    ]
+    profile = {
+        "interests": ["AI", "software engineering"],
+        "career_goals": ["internship"],
+        "priority_locations": ["Malaysia"],
+        "exclude_topics": [],
+    }
+
+    result = run_persistent_pipeline_from_articles(
+        database_path=database_path,
+        articles=articles,
+        profile=profile,
+        run_date="2026-05-14",
+        limit=1,
+    )
+
+    saved_articles = list_articles(database_path)
+
+    assert result["kept_count"] == 2
+    assert result["selected_count"] == 1
+    assert len(saved_articles) == 2
+    assert {article["status"] for article in saved_articles} == {"selected", "kept"}

@@ -36,6 +36,7 @@ def run_pipeline_from_articles(
         "rejected_count": len(rejected_articles),
         "selected_count": len(selected_articles),
         "rejected_articles": rejected_articles,
+        "kept_articles": unique_articles,
         "selected_articles": selected_articles,
         "digest_text": digest_text,
     }
@@ -71,7 +72,7 @@ def run_persistent_pipeline_from_articles(
             )
             article_ids_by_url[article["url"]] = article_id
 
-        for article in result["selected_articles"]:
+        for article in result["kept_articles"]:
             article_status = "selected" if article.get("url") in selected_urls else "kept"
             article_id = create_article(
                 database_path,
