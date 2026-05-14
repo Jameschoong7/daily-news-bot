@@ -1,4 +1,7 @@
-from app.pipeline.daily_pipeline import run_pipeline_from_articles
+from app.pipeline.daily_pipeline import run_persistent_pipeline_from_articles, run_pipeline_from_articles
+
+from app.db.database import initialize_database
+from app.db.repositories import get_daily_run_by_id, list_articles, list_digest_items_for_run
 
 
 def test_run_pipeline_from_articles_builds_digest_from_static_articles():
@@ -35,3 +38,57 @@ def test_run_pipeline_from_articles_builds_digest_from_static_articles():
     assert result["selected_count"] == 1
     assert "Malaysia AI internship opportunities grow" in result["digest_text"]
     assert "Celebrity gossip" not in result["digest_text"]
+
+
+def test_run_persistent_pipeline_from_articles_logs_run_articles_and_digest_items(tmp_path):
+    database_path = tmp_path / "test_news_bot.db"
+    initialize_database(database_path)
+
+    articles = [
+        {
+            "title": "Malaysia AI internship opportunities grow",
+            "url": "https://example.com/ai",
+            "raw_summary": "Software engineering students may benefit.",
+            "source_name": "Example News",
+            "category_guess": "technology",
+            "credibility_score": 1.0,
+        },
+        {
+            "title": "Celebrity gossip dominates awards show",
+            "url": "https://example.com/gossip",
+            "raw_summary": "Entertainment story.",
+            "source_name": "Example News",
+            "category_guess": "entertainment",
+            "credibility_score": 0.7,
+        },
+    ]
+    profile = {
+        "interests": ["AI", "software engineering"],
+        "career_goals": ["internship"],
+        "priority_locations": ["Malaysia"],
+        "exclude_topics": ["celebrity gossip"],
+    }
+
+    result = run_persistent_pipeline_from_articles(
+        database_path=database_path,
+        articles=articles,
+        profile=profile,
+        run_date="2026-05-14",
+        limit=1,
+    )
+
+    saved_run = get_daily_run_by_id(database_path, result["run_id"])
+    saved_articles = list_articles(database_path)
+    saved_digest_items = list_digest_items_for_run(database_path, result["run_id"])
+
+    assert saved_run["status"] == "completed"
+    assert saved_run["articles_fetched"] == 2
+    assert saved_run["articles_after_filter"] == 1
+    assert saved_run["articles_selected"] == 1
+
+    assert len(saved_articles) == 2
+    assert {article["status"] for article in saved_articles} == {"selected", "rejected"}
+
+    assert len(saved_digest_items) == 1
+    assert saved_digest_items[0]["rank_position"] == 1
+    assert "Malaysia AI internship opportunities grow" in result["digest_text"]
