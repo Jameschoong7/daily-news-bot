@@ -161,10 +161,11 @@ def build_digest_text_from_digest_records(digest_records: list[dict[str, Any]]) 
     for item in digest_records:
         lines.extend(
             [
-                f"{item['rank_position']}. {item['title']}",
-                f"Summary: {item['final_summary']}",
-                f"Why it matters: {item['why_it_matters']}",
-                f"Category: {item.get('category') or 'uncategorized'}",
+                "",
+                f"{item['rank_position']}. {item['title']}\n",
+                f"Summary: {item['final_summary']}\n",
+                f"Why it matters: {item['why_it_matters']}\n",
+                f"Category: {item.get('category') or 'uncategorized'}\n",
                 item["url"],
                 "",
             ]

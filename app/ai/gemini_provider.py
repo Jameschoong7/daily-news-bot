@@ -11,7 +11,7 @@ DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 
 def parse_summary_response(response_text: str) -> ArticleSummary:
     """Parse Gemini JSON response text into an ArticleSummary."""
-    data = json.loads(response_text)
+    data = json.loads(extract_json_object(response_text))
 
     return ArticleSummary(
         final_summary=data["final_summary"],
@@ -50,3 +50,20 @@ class GeminiProvider(AIProvider):
         )
 
         return parse_summary_response(response.text)
+
+
+def extract_json_object(response_text: str) -> str:
+    """Extract the first JSON object from a model response."""
+    cleaned = response_text.strip()
+
+    if cleaned.startswith("```"):
+        cleaned = cleaned.removeprefix("```json").removeprefix("```").strip()
+        cleaned = cleaned.removesuffix("```").strip()
+
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+
+    if start == -1 or end == -1 or end < start:
+        raise ValueError("Gemini response did not contain a JSON object")
+
+    return cleaned[start : end + 1]
