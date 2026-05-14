@@ -7,7 +7,7 @@ class FakeProvider(AIProvider):
             final_summary=f"Summary: {article['title']}",
             why_it_matters="Relevant to the configured profile.",
         )
-    
+
 
 def test_ai_provider_returns_article_summary_shape():
     provider = FakeProvider()
